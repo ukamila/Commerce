@@ -1,0 +1,93 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+{% csrf_token %}
+    <h2 style="text-align:left; font-size: 30px;"> Listing: {{ list.title }}</h2>
+
+    <div class="listing-section">
+      {% if in_watchlist %}
+          <a href="{% url 'change_watchlist' list.id %}"><span class="badge badge-primary">Watchlisted</span></a>
+      {% elif user.is_authenticated and not in_watchlist %}
+          <a href="{% url 'change_watchlist' list.id %}"><span class="badge badge-secondary">Add to Watchlist</span></a>
+      {% endif %}
+    </div>
+    <div class="listing-section">
+      {% if user.is_authenticated %}
+        {% if list.active %}
+          {% if user == list.seller%}
+            <a href="{% url 'close_auction' list.id %}"><span class="badge badge-primary">Close Auction</span></a>
+          {% endif %}
+        {% elif list.active == False %}
+          <span class="badge badge-secondary">Auction is closed</span>
+        {% endif %}
+      {% endif %}
+    </div>
+    <div class="firstbox">
+      <img src="{{ list.image }}" alt="img">
+      <div class="description_box">
+        <div id="description">{{ list.description }}</div>
+        <div style="font-size: 25px; font-family: Arial, sans-serif;"> ${{ list.bid }}.00</div>
+        {% if list.active %}
+          {% if user.is_authenticated %}
+            <div>{{ num_bids }} bid(s) so far. 
+                {% if your_bid %}
+                Your bid is the current bid. 
+                {% endif%}
+            </div>
+            <form action="{% url 'place_a_bid' list.id%}" method="post">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control" name = new_bid aria-label="Amount (to the nearest dollar)">
+                    <div class="input-group-append">
+                      <span class="input-group-text">.00</span>
+                    </div>
+                  </div>
+                  <input id="btn" class="btn btn-secondary btn-sm" type="submit" value="Place a Bid">
+            </form>
+          {% endif %}
+        {% else %}
+          <div class="headings">Auction is closed</div>
+          {% if list.winner == user %}
+          <div class="headings">You won this auction!</div>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    <h3 class="headings"> Details </h3>
+    <div class="details">
+        Listed by: {{ list.seller }}
+        <br>
+        <br>
+        Category: {{ list.category }}
+      </div>
+    <h2 class="headings" data-comp="Text Box StyledComponent BaseComponent ">Comments:</h2>
+        {% for comment in all_comments %}
+            <div class="comment" style="font-style:oblique;">{{ comment.user }}
+              <span data-at="time_posted" id="timestamp">{{ comment.created_on }}</span>
+            </div>
+            <div class="divider" data-comp="Divider StyledComponent "></div>
+            <div class="comment_text">{{ comment.text }}</div>
+            <div class="divider" data-comp="Divider StyledComponent "></div>
+        {% empty %}
+            <h4 class="form-text text-muted">No comments yet.</h3>
+        {% endfor %}
+    <br>
+    {% if user.is_authenticated %}
+    <form action="{% url 'comment' list.id %}" method="post">
+      {% csrf_token %}
+      {% if list.active %}
+        <h4 class="headings">Add a comment</h4>
+        <textarea class="form-control" type="text" rows = "3" name = new_comment required placeholder="Type your comment here"></textarea>
+        <small id="titleHelpBlock" class="form-text text-muted">
+          Your comment can't exceed 150 words.
+        </small>
+        <input id = "btn" class="btn btn-secondary" type="submit" value="Add">
+      {% endif %}
+    </form>
+    {% endif %}
+    
+    
+{% endblock %}

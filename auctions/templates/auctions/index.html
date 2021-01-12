@@ -1,0 +1,26 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Active Listings 
+        {% if is_category %}
+        for Chosen Category
+        {% endif %}
+    </h2>
+        {% csrf_token %}
+        {% for list in listings %}
+        <div class="firstbox">
+            <img src="{{ list.image }}" alt="img">
+            <div class="description_box">
+                <h3 style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"><a style="color:rgba(32, 32, 32, 0.774);" href="{% url 'listing' list %}">{{ list.title }}</a></h3>
+                <h4>Price: ${{list.bid}}.00</h4>
+                <div color="gray">
+                    Created {{ list.datetime }}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            No listings yet
+        {% endfor %}
+        
+    
+{% endblock %}
